@@ -6,6 +6,9 @@ Doesn't require any unusual packages.
 import pandas as pd
 
 
+VERSION = '0.0.1'
+
+
 def pymol_to_mdtraj(pymol_string):
     """
     Simple function to convert a pymol-like residue string into mdtraj-like
@@ -57,7 +60,90 @@ def get_chain_df_dict_from_large_chain_df_dict(chain_df_dict, single_selection):
                                                                  })
     return new_chain_df_dict
 
-def get_dihedral_bin_probabilities(df, bin_boundaries = [-180, 0, 120, 180]):
+
+def get_mdtraj_idx_array(t, dist_array):
+    """
+    Given a numpy array that looks like this:
+    (
+    ((XX, chainid), (YY, chainid)),
+    ((XX, chainid), (YY, chainid)),
+    )
+    """
+    dist_label_dict = {}
+
+    ## Not super necessary but nice to get the names:
+    protein = t.atom_slice(t.topology.select('chainid 0 or chainid 1'))
+    chainA = t.atom_slice(t.topology.select('chainid 0'))
+    n_residues = chainA.topology.n_residues
+
+    ## this will returned
+    names = []
+
+    ## these will be return as a dict
+    chainA_idx_list = []
+    chainB_idx_list = []
+
+    ## for each pair of residues in the dist_array
+    for res1_set, res2_set in dist_array:
+
+        ## get the naive res numbers
+        res1_number = res1_set[0]
+        res2_number = res2_set[0]
+
+        ## for chain A, chain B
+        for chain in [0, 1]:
+
+            ## set res1
+            res1_chainid = chain
+
+            ## if it is zero, then we can take the chainid's as is
+            if res1_chainid == 0:
+                res2_chainid = res2_set[1]
+
+                ## have to account for missing residues
+                res1id = res1_number - 30
+
+            ## otherwise, we have to flip the chainid
+            elif res1_chainid == 1:
+                res2_chainid = int(not res2_set[1])
+
+                ## we also have to add n_residues to res1 to give it chain 0's number
+                res1id = res1_number - 30 + n_residues
+
+            ## now we have set res2's chainid, so we can set the resid
+            if res2_chainid == 0:
+                res2id = res2_number - 30
+            elif res2_chainid == 1:
+                res2id = res2_number - 30 + n_residues
+
+            print('RES NUMBER, CHAIN:', res1_number, res1_chainid, res2_number, res2_chainid)
+
+            print('RES ID:', res1id, res2id)
+
+            ## get the residues!
+            res1 = protein.topology.residue(res1id)
+            res2 = protein.topology.residue(res2id)
+
+            if res1_chainid == 0:
+                ## this is a nice check just to make sure the chain index is the one we think we are using
+                ## we will save the name based on the first residue being in chain 0
+                string = f'{res1}_{res1.chain.index} to {res2}_{res2.chain.index}'
+                names.append(string)
+
+                chainA_idx_list.append([res1id, res2id])
+
+
+            elif res1_chainid == 1:
+                chainB_idx_list.append([res1id, res2id])
+
+    ## now we combine the two lists
+
+    idx_dict = {'ChainA': chainA_idx_list, 'ChainB': chainB_idx_list}
+
+    return names, idx_dict
+
+
+def get_dihedral_bin_probabilities_from_df(df, bin_boundaries = [-180, 0, 120, 180]):
     cols = list(df.columns)
     print(cols)
     bin_list = [(col, bin_max) for col in cols for bin_max in bin_boundaries]
@@ -95,7 +181,7 @@ def get_dihedral_bin_probabilities(df, bin_boundaries = [-180, 0, 120, 180]):
             state_names.append(f'{chaina_tuple[0]}_{chainb_tuple[0]}')
             counts.append(len(index_list))
 
-    prob_df = pd.DataFrame('State Name' = state_names, 'Counts' = counts)
+    prob_df = pd.DataFrame({'State Name': state_names, 'Counts': counts})
 
     return prob_df
 

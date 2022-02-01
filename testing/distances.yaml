@@ -1,0 +1,4 @@
+## Used as an example for how to calculate particular distance-distance contacts
+ILE_CORE:
+  - [[46, 0], [271, 0]]
+  - [[46, 0], [271, 1]]
