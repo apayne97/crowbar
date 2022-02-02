@@ -4,6 +4,8 @@ import pandas as pd
 import mdtraj as md
 from simtk.openmm.app import CharmmPsfFile
 
+VERSION = '0.0.1'
+
 def load_sysdf(simulation_table_path="simulations.yaml"):
     """
     loads the simulations yaml file and returns a transformed dataframe
@@ -110,3 +112,11 @@ def import_systems_from_munged(sys_names, traj_prefixes, sim_yaml, prefix_dict, 
                 sys_dict[full_name] = clone_info
 
     return sys_dict
+
+def load_dist_dict(dist_yaml='/Users/alexpayne/Scientific_Projects/crowbar/testing/distances.yaml'):
+    print(f'Getting dist_dict from {dist_yaml}')
+
+    with open(dist_yaml) as f:
+        dist_dict = yaml.safe_load(f)
+
+    return dist_dict
