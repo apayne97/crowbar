@@ -6,7 +6,7 @@ Doesn't require any unusual packages.
 import pandas as pd
 
 
-VERSION = '0.0.2'
+VERSION = '0.2.0'
 
 
 def pymol_to_mdtraj(pymol_string):
