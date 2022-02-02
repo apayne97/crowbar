@@ -3,6 +3,7 @@ Contains functions for iterating functions from plot, calc, and convert over a s
 'sys_dict'.
 
 """
+VERSION = '0.0.1'
 
 def sys_dict_data_iterator(func, sys_dict, data_name, *args, **kwargs):
     for name, info in sys_dict.items():
@@ -12,11 +13,13 @@ def sys_dict_data_iterator(func, sys_dict, data_name, *args, **kwargs):
     return sys_dict
 
 
-def sys_dict_data_convert_iterator(func, sys_dict, input_data_name, output_data_name, *args, **kwargs):
+def sys_dict_data_convert_iterator(func, sys_dict, input_data_dict, output_data_name, *args, **kwargs):
     for name, info in sys_dict.items():
         print(name)
-        data = info[input_data_name]
-        sys_dict[name][output_data_name] = func(data, *args, **kwargs)
+        data_dict = {}
+        for param, value in input_data_dict.items():
+            data_dict[param] = info[value]
+        sys_dict[name][output_data_name] = func(*args, **data_dict, **kwargs)
     return sys_dict
 
 

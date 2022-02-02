@@ -8,6 +8,8 @@ import plotly as pt
 import plotly.express as px
 import plotly.graph_objects as go
 
+VERSION = '0.0.1'
+
 def make_square(func):
     def wrapper(*args, **kwargs):
 
@@ -17,6 +19,17 @@ def make_square(func):
             scaleanchor="x",
             scaleratio=1,
         )
+        return fig
+    return wrapper
+
+def dist_hist_wrapper(func):
+    def wrapper(*args, **kwargs):
+        fig = func(*args, **kwargs)
+        fig.update_layout(height=800, width=800, barmode='overlay')
+        fig.update_yaxes(range=[0, 0.5])
+        fig.update_traces(opacity=0.5, xbins={'size': 0.25})
+        #     'opacity': 0.5,
+        #     'xbins': {'size': 0.25}
         return fig
     return wrapper
 
@@ -57,6 +70,17 @@ def plot_dihedral_by_chain(df, resname, chainids = [0, 1], plot_type = 'scatter'
     #         dtick=25
     #     )
     # )
+    return fig
+
+@dist_hist_wrapper
+def plot_dist_from_long_df(long_df):
+    fig = px.histogram(long_df,
+                       x='Minimum Heavy Atom Distance (Å)',
+                       facet_col='Label',
+                       color='Chain',
+                      histnorm='probability'
+                      )
+    fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
     return fig
 
 def plot_dihedral_by_chain_histogram(df, resname, chainids = [0, 1]):

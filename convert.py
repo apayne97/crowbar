@@ -61,13 +61,17 @@ def get_chain_df_dict_from_large_chain_df_dict(chain_df_dict, single_selection):
     return new_chain_df_dict
 
 
-def get_mdtraj_idx_array(t, dist_array):
+def get_mdtraj_idx_dict_from_dist_array(t, dist_array):
     """
     Given a numpy array that looks like this:
     (
     ((XX, chainid), (YY, chainid)),
     ((XX, chainid), (YY, chainid)),
     )
+
+    This function will return a set of dist_names and mdtraj selection strings like this:
+    dist_names = ['ILE46_0 to ILE271_0', 'ILE46_0 to ILE271_1']
+    mdtraj_dict = {'ChainA': [[16, 241], [16, 688]], 'ChainB': [[463, 688], [463, 241]]}
     """
     dist_label_dict = {}
 
@@ -141,7 +145,6 @@ def get_mdtraj_idx_array(t, dist_array):
     idx_dict = {'ChainA': chainA_idx_list, 'ChainB': chainB_idx_list}
 
     return names, idx_dict
-
 
 def get_dihedral_bin_probabilities_from_df(df, bin_boundaries = [-180, 0, 120, 180]):
     cols = list(df.columns)

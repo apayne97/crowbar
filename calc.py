@@ -102,3 +102,39 @@ def construct_chi2_df(t, selection):
     chi2df = pd.DataFrame(chi2s[1] * 180 / np.pi, columns=reslist)
     return chi2df
 
+
+def get_dist_df_from_idx_dict(t, names, idx_dict, scheme='closest', return_long_df=True):
+    """
+    Given an idx_dict as generated from convert.get_mdtraj_idx_dict_from_dist_array(),
+    return a distance df.
+
+    :param t:
+    :param names:
+    :param idx_dict:
+    :param scheme:
+    :param return_long_df:
+    :return:
+    """
+    dfs = {}
+    for chain, idx_array in idx_dict.items():
+        contacts, residue_pairs = md.compute_contacts(t, contacts=idx_array, scheme=scheme)
+        contacts_angstroms = contacts * 10
+        df = pd.DataFrame(contacts_angstroms, columns=names)
+
+        if return_long_df:
+            df['Time'] = t.time
+            newdf = pd.melt(df, id_vars='Time')
+            newdf.columns = ['Time', 'Label', 'Minimum Heavy Atom Distance (Å)']
+            newdf['Chain'] = chain
+        else:
+            newdf = pd.DataFrame(df, columns=names)
+            newdf['Time'] = t.time
+
+        dfs[chain] = newdf
+    if return_long_df:
+        return_obj = pd.concat(dfs.values())
+    else:
+        print('return chain dict')
+        # return_df = pd.merge(dfs['ChainA'],dfs['ChainB'], on="Time")
+        return_obj = dfs
+    return return_obj
