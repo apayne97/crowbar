@@ -3,7 +3,9 @@ Contains functions for iterating functions from plot, calc, and convert over a s
 'sys_dict'.
 
 """
-VERSION = '0.0.1'
+import random
+
+VERSION = '0.1.0'
 
 def sys_dict_data_iterator(func, sys_dict, data_name, *args, **kwargs):
     for name, info in sys_dict.items():
@@ -68,10 +70,10 @@ def return_sample_item(sys_dict:dict, item):
     :param sys_dict:
     :return:
     """
-    sys = sys_dict.popitem()[1]
-    item = sys.get(item)
+    sys, info = random.choice(list(sys_dict.items()))
+    item = info.get(item)
 
-    print(f'{sys["Title"]}')
+    print(f'{info["Title"]}')
     return item
 
 
@@ -82,6 +84,6 @@ def return_sample_sys(sys_dict: dict):
     :param sys_dict:
     :return:
     """
-    sys = sys_dict.popitem()[1]
-    print(f'{sys["Title"]}')
-    return sys
+    sys, info = random.choice(list(sys_dict.items()))
+    print(f'{info["Title"]}')
+    return info

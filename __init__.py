@@ -1,1 +1,1 @@
-__all__ = ['calc', 'convert', 'load', 'munge', 'plot']
+__all__ = ['calc', 'convert', 'load', 'munge', 'plot', 'iterate']
