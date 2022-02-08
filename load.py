@@ -4,7 +4,7 @@ import pandas as pd
 import mdtraj as md
 from simtk.openmm.app import CharmmPsfFile
 
-VERSION = '0.0.1'
+VERSION = '0.2.1'
 
 def load_sysdf(simulation_table_path="simulations.yaml"):
     """
@@ -51,6 +51,9 @@ def load_test():
 
 def import_systems_from_munged(sys_names, traj_prefixes, sim_yaml, prefix_dict, traj_file_extension, n_clones, munged_path):
     """
+    Assumes trajectory strided to 1ns / frame and aligned with md.superpose().
+
+    Returns the sys_dict. Trajectories are mdtraj trajectories.
 
     :param sys_names:
     :param traj_prefixes:
@@ -59,7 +62,7 @@ def import_systems_from_munged(sys_names, traj_prefixes, sim_yaml, prefix_dict, 
     :param traj_file_extension:
     :param n_clones:
     :param munged_path:
-    :return:
+    :return sys_dict:
     """
 
 
@@ -108,6 +111,9 @@ def import_systems_from_munged(sys_names, traj_prefixes, sim_yaml, prefix_dict, 
                 traj, pdb = import_traj_from_munged(traj_path, psf_path, pdb_path)
                 clone_info['Input PDB'] = pdb
                 clone_info['traj'] = traj
+
+                ## this values is used to combine replicates (clones) of the same system
+                clone_info['Sys'] = f'{clone_info["State"]} {clone_info["Equilibration"]}'
 
                 sys_dict[full_name] = clone_info
 

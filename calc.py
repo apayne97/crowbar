@@ -12,6 +12,8 @@ from math import pi
 import numpy as np
 import pandas as pd
 
+VERSION = '0.0.1'
+
 
 ## RMSD and RMSF Calculations
 
