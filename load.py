@@ -8,6 +8,8 @@ VERSION = '0.2.1'
 
 def load_sysdf(simulation_table_path="simulations.yaml"):
     """
+    haven't really been using this
+
     loads the simulations yaml file and returns a transformed dataframe
     :param simulation_table_path:
     :return:
@@ -40,8 +42,13 @@ def import_traj_from_munged(traj_path, psf_path, pdb_path):
 
     return (t, pdb)
 
-def load_test():
-    crow_path = '/Users/alexpayne/Scientific_Projects/crowbar'
+def load_test(crow_path = '/Users/alexpayne/Scientific_Projects/crowbar'):
+    """
+    This just confirms that the loading script will work with data saved in the crowbar repo.
+
+    :param crow_path:
+    :return:
+    """
     traj_path = crow_path + '/testing/step7_1.dcd'
     pdb_path = crow_path + '/testing/step5_input.pdb'
     psf_path = crow_path + '/testing/step5_input.psf'
