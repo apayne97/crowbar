@@ -6,7 +6,7 @@ Doesn't require any unusual packages.
 import pandas as pd
 
 
-VERSION = '0.2.1'
+VERSION = '0.2.2'
 
 
 def pymol_to_mdtraj(pymol_string):
@@ -181,6 +181,67 @@ def get_state_df_from_dims_and_bin_bounds(dims, bin_bounds):
 
     return df
 
+def get_state_from_snapshot(snapshot, state_df):
+    """
+    For each snapshot in time, captures which state the snapshot is in.
+
+    Notably, does not require a specific number of states or dimensions.
+
+    But is probably very slow for many dimensions / states.
+
+    :param snapshot:
+    :param state_df:
+    :return:
+    """
+
+    ## start with no state label
+
+    state_label = None
+    n_state = len(state_df)
+
+    ## Now we iterate through each state and see if it is in that state
+    for n in range(n_state):
+        ## get our state definitions from the state_df
+        state_def = list(state_df.iloc[n])
+        state_idx = state_def[-1]
+        state_bins = state_def[:-1]
+
+        ## Assume true, then mark false and break if any of the dimensions is not in the state definition
+        ## I think this is faster because it will quit faster
+        this_label = True
+        for i, dim_bin in enumerate(state_bins):
+            lower, upper = dim_bin
+            data = snapshot[i]
+            if not data > lower or not data < upper:
+                this_label = False
+                break
+
+        ## if all necessary conditions have still been met, then call this snapshot this state and quit
+        if this_label == True:
+            state_label = state_idx
+            break
+
+    return state_label
+
+def get_state_timseries_from_df(df, state_df):
+    """
+    Assumes 'State' is last column in state_df.
+
+    Also assumes that it needs to index the df based on dimensions in state_df.
+
+    :param df:
+    :param state_df:
+    :return:
+    """
+
+    dims = list(state_df.columns[:-1])
+
+    data_df = df[dims]
+
+    result = data_df.apply(get_state_from_snapshot, axis=1, state_df=state_df)
+
+    return result
+
 def get_dihedral_bin_probabilities_from_df(sys_name, df):
     cols = list(df.columns)[:-1] ## This drops the 'sys name' column
     print(cols)
@@ -243,9 +304,6 @@ def get_dihedral_bin_probabilities_from_df(sys_name, df):
     prob_df = pd.DataFrame({'State Name': state_names, 'Counts': counts, 'Probability': probabilities, 'Sys Name': sys_name})
 
     return prob_df
-
-def flatten_dihedral_bin_probabilities_into_states(sys_name, df, bin_boundaries = [-180, 0, 120, 180]):
-    pass
 
 def get_mean_from_long_dist_df(sys_name, long_df, data_name):
     """
