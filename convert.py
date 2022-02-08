@@ -6,7 +6,7 @@ Doesn't require any unusual packages.
 import pandas as pd
 
 
-VERSION = '0.2.0'
+VERSION = '0.2.1'
 
 
 def pymol_to_mdtraj(pymol_string):
@@ -146,7 +146,42 @@ def get_mdtraj_idx_dict_from_dist_array(t, dist_array):
 
     return names, idx_dict
 
-def get_dihedral_bin_probabilities_from_df(sys_name, df, bin_boundaries = [-180, 0, 120, 180]):
+
+def get_state_df_from_dims_and_bin_bounds(dims, bin_bounds):
+    import itertools
+
+    ## bins include left and right outer bounds
+    n_bins = len(bin_bounds) - 1
+    n_dims = len(dims)
+
+    ## the number of states scales as the number of bins to the power of the number of dimensions
+    n_states = n_bins ** n_dims
+
+    ## Get bins from bin_bounds
+    bin_list = [(bin_bounds[i], bin_bounds[i + 1]) for i in range(n_bins)]
+
+    ## This is just a list of the new state ids
+    state_idx = [i for i in range(n_states)]
+
+    ## This gets all the combinations (where order matters) of the bins for each dimension
+    state_bins = list(itertools.product(bin_list, repeat=n_dims))
+
+    ## This needs to be true!
+    assert len(state_idx) == len(state_bins)
+
+    ## Love this dict comprehension
+    ## this unzips the list of tuples from the state_bins into two lists
+    dim_bin_dict = {dim: list(zip(*state_bins))[i] for i, dim in enumerate(dims)}
+
+    ## Probably not necessary but I think its kinda nice to have?
+    dim_bin_dict['State'] = state_idx
+
+    ## DataFrames are nice so lets return that
+    df = pd.DataFrame(dim_bin_dict)
+
+    return df
+
+def get_dihedral_bin_probabilities_from_df(sys_name, df):
     cols = list(df.columns)[:-1] ## This drops the 'sys name' column
     print(cols)
     bin_list = [(col, bin_max) for col in cols for bin_max in bin_boundaries]
@@ -208,6 +243,9 @@ def get_dihedral_bin_probabilities_from_df(sys_name, df, bin_boundaries = [-180,
     prob_df = pd.DataFrame({'State Name': state_names, 'Counts': counts, 'Probability': probabilities, 'Sys Name': sys_name})
 
     return prob_df
+
+def flatten_dihedral_bin_probabilities_into_states(sys_name, df, bin_boundaries = [-180, 0, 120, 180]):
+    pass
 
 def get_mean_from_long_dist_df(sys_name, long_df, data_name):
     """
