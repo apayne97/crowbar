@@ -5,9 +5,10 @@ Doesn't require any unusual packages.
 """
 import pandas as pd
 from pymbar import timeseries
+import numpy as np
 
 
-VERSION = '0.2.4'
+VERSION = '0.2.5'
 
 
 def pymol_to_mdtraj(pymol_string):
@@ -294,6 +295,49 @@ def get_state_prob_from_tseries(tseries, state_dict):
 
     return df
 
+def bootstrap_error_bars(tseries, n=10000, state_idx=1):
+    """
+    Assumes binary data.
+    """
+
+    lower_bound = int(n * 0.025)
+    upper_bound = int(n * 0.975)
+
+    probs = []
+    for i in range(n):
+        sample = tseries.sample(frac=1, replace=True, axis=0)
+        prob = len(sample[sample == state_idx]) / len(sample)
+        probs.append(prob)
+
+    probs.sort()
+
+    lower = probs[lower_bound]
+    upper = probs[upper_bound]
+
+    mean = np.mean(probs)
+    print(lower, mean, upper)
+    print(mean-lower, mean, upper-mean)
+
+    return (mean-lower, mean, upper-mean)
+
+def get_binary_state_prob_from_tseries(tseries):
+    """
+    Based on a dictionary of state names and idx, convert a tseries to a dataframe of probabilities associated with that state.
+
+
+    :param state_dict:
+    :return:
+    """
+
+    lower, mean, upper = bootstrap_error_bars(tseries)
+
+    df = pd.DataFrame({'State': 'Open', 'Probability': mean, 'Lower Bound': lower, 'Upper Bound': upper},index=[0])
+
+    return df
+
+
+
+
 
 
 def get_dihedral_bin_probabilities_from_df(sys_name, df):
@@ -388,10 +432,13 @@ def get_replicate_df(sys_dict, df_name):
     """
 
     df_list = []
+    idx_list = []
     for sys, info in sys_dict.items():
+        idx_list.append(info['CloneIDX'])
         df = info[df_name]
         sys_name = info['Sys']
         df['Sys Name'] = sys_name
         df_list.append(df)
     full_df = pd.concat(df_list)
+    full_df['Clone ID'] = idx_list
     return full_df
