@@ -6,7 +6,7 @@ Doesn't require any unusual packages.
 import pandas as pd
 
 
-VERSION = '0.2.2'
+VERSION = '0.2.3'
 
 
 def pymol_to_mdtraj(pymol_string):
@@ -189,6 +189,8 @@ def get_state_from_snapshot(snapshot, state_df):
 
     But is probably very slow for many dimensions / states.
 
+    State bins are assumed to be [lower, upper)
+
     :param snapshot:
     :param state_df:
     :return:
@@ -212,7 +214,7 @@ def get_state_from_snapshot(snapshot, state_df):
         for i, dim_bin in enumerate(state_bins):
             lower, upper = dim_bin
             data = snapshot[i]
-            if not data > lower or not data < upper:
+            if not data >= lower or not data < upper:
                 this_label = False
                 break
 
