@@ -33,6 +33,13 @@ def dist_hist_wrapper(func):
         return fig
     return wrapper
 
+def remove_silly_annotations(func):
+    def wrapper(*args, **kwargs):
+        fig = func(*args, **kwargs)
+        fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
+        return fig
+    return wrapper
+
 @make_square
 def plot_dihedrals(df):
     #combined_df = construct_chi12_df(t, selection)
@@ -86,7 +93,8 @@ def plot_dihedral_by_chain_histogram(df, resname, chainids = [0, 1]):
                              )
     return fig
 
-def plot_replicate_df(replicate_df):
+@remove_silly_annotations
+def plot_distance_replicate_df(replicate_df):
     fig = px.strip(replicate_df, x='Dist Name', y='Mean Val (Å)', color='Sys Name',
                         category_orders={ # replaces default order by column name
                     "Dist Name": ["ILE46_0 to ILE271_1", "ILE46_0 to ILE271_0", "ILE46_0 to ILE46_1", "ILE271_0 to ILE271_1"],
@@ -95,6 +103,17 @@ def plot_replicate_df(replicate_df):
     fig.update_xaxes(title='Residue-Residue Distance')
     fig.update_yaxes(title='Mean CA-CA Distance (Å)')
     return fig
+
+@remove_silly_annotations
+def plot_dihedral_prob_replicate_df(replicate_df):
+    fig = px.strip(replicate_df, x='Sys Name', y='Probability', facet_col='State', color='Sys Name',
+                        category_orders={  # replaces default order by column name,
+                            "Sys Name": ["Open CHARMM-GUI", "Open CGUI 10x + 100ns bb", "Closed CHARMM-GUI",
+                                         "Closed CGUI 10x + 100ns bb"]
+                        }
+                        )
+    return fig
+
 
 def plot_combined_dihedral_plots(df, resname, chainids = [0, 1]):
     x = f'{resname}_Chain {chainids[0]}'
