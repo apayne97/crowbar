@@ -7,7 +7,7 @@ import pandas as pd
 from pymbar import timeseries
 
 
-VERSION = '0.2.3'
+VERSION = '0.2.4'
 
 
 def pymol_to_mdtraj(pymol_string):
