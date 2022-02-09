@@ -125,6 +125,16 @@ def plot_dihedral_prob_replicate_df_with_error(replicate_df):
                         )
     return fig
 
+@remove_silly_annotations
+def plot_dihedral_prob_replicate_df_with_error_combined(replicate_df):
+    fig = px.scatter(replicate_df, x='Sys Name', y='Probability',
+                        category_orders={  # replaces default order by column name,
+                            "Sys Name": ["Open CHARMM-GUI", "Open CGUI 10x + 100ns bb", "Closed CHARMM-GUI",
+                                         "Closed CGUI 10x + 100ns bb"]
+                        },
+                   error_y="Upper Bound", error_y_minus="Lower Bound"
+                        )
+    return fig
 
 
 def plot_combined_dihedral_plots(df, resname, chainids = [0, 1]):

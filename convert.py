@@ -8,7 +8,7 @@ from pymbar import timeseries
 import numpy as np
 
 
-VERSION = '0.2.5'
+VERSION = '0.3.0'
 
 
 def pymol_to_mdtraj(pymol_string):
@@ -335,74 +335,6 @@ def get_binary_state_prob_from_tseries(tseries):
 
     return df
 
-
-
-
-
-
-def get_dihedral_bin_probabilities_from_df(sys_name, df):
-    cols = list(df.columns)[:-1] ## This drops the 'sys name' column
-    print(cols)
-    bin_list = [(col, bin_max) for col in cols for bin_max in bin_boundaries]
-
-    total_bins = len(cols) * (len(bin_boundaries) - 1)
-
-    total_len = len(df)
-
-    df_dict = {}
-
-    for i in range(len(cols)):
-        col_dict = {}
-        for j in range(len(bin_boundaries) - 1):
-            col = cols[i]
-            lower = bin_boundaries[j]
-            upper = bin_boundaries[j + 1]
-            # print(upper, lower)
-            # print(df[col])
-            new_df = df[(df[col] > lower) & (df[col] < upper)]
-            #return_df = new_df.loc[:, col]
-            col_dict[f'{lower}>{col}<{upper}'] = new_df
-        df_dict[col] = col_dict
-        #print(df_dict)
-
-    state_list = [f'{r1}_{r2}' for r1 in [-60, 60, 160] for r2 in [-60, 60, 160]]
-    print(state_list)
-    # for col in cols
-
-    chaina = cols[0]
-    chainb = cols[1]
-
-    state_names = []
-    counts = []
-    probabilities = []
-    for chaina_tuple in df_dict[chaina].items():
-        for chainb_tuple in df_dict[chainb].items():
-            chaina_index = list(chaina_tuple[1].index)
-            chainb_index = list(chainb_tuple[1].index)
-            index_list = [value for value in chaina_index if value in chainb_index]
-            state_names.append(f'{chaina_tuple[0]}_{chainb_tuple[0]}')
-
-            count = len(index_list)
-            prob = count / total_len
-
-            counts.append(count)
-            probabilities.append(prob)
-
-    state_names = ['Closed-Closed',
-                   'Closed-Intermediate',
-                   'Closed-Open',
-                   'Closed-Intermediate',
-                   'Intermediate-Intermediate',
-                   'Intermediate-Open',
-                   'Closed-Open',
-                   'Intermediate-Open',
-                   'Open-Open'
-                   ]
-
-    prob_df = pd.DataFrame({'State Name': state_names, 'Counts': counts, 'Probability': probabilities, 'Sys Name': sys_name})
-
-    return prob_df
-
 def get_mean_from_long_dist_df(sys_name, long_df, data_name):
     """
     Collapses data split by chain into a mean.
@@ -442,3 +374,28 @@ def get_replicate_df(sys_dict, df_name):
     full_df = pd.concat(df_list)
     full_df['Clone ID'] = idx_list
     return full_df
+
+def get_combined_tseries_across_replicates(sys_dict, sys_list, data_name):
+    """
+    Goal is to combine the data across replicates.
+
+    :param sys_dict:
+    :param sys_list:
+    :return (combined_df, sys_tseries_dict)
+    """
+    sys_tseries_dict = {}
+    df_list = []
+    for sys in sys_list:
+        ## use this to make a list of the tseries
+        tseries_list = [info[data_name] for info in sys_dict.values() if info['Sys'] == sys]
+
+        ## 'explode' this series into one big series
+        combined_tseries = pd.Series(tseries_list).explode()
+        sys_tseries_dict[sys] = combined_tseries
+
+        ## this part takes a while, bootstrap error bars and mean from combined data
+        ## might want to split this up into a separate function
+        df_list.append(get_binary_state_prob_from_tseries(combined_tseries))
+    combined_df = pd.concat(df_list)
+    combined_df['Sys Name'] = sys_list
+    return combined_df, sys_tseries_dict
