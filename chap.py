@@ -24,16 +24,15 @@ from matplotlib import pyplot as pl
 import matplotlib.mlab as mlab
 import json
 from scipy.stats import norm
-import paramiko
 import mdtraj as md
 import os
 import sys
 import subprocess
 import getpass
-from scp import SCPClient, SCPException
-
 
 def do_chap(topology,trajectory,output_path,solvent='15'):
+    from scp import SCPClient, SCPException
+    import paramiko
     
     def dcd_to_xtc(topology, trajectory):
         
