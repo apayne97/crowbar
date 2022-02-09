@@ -4,6 +4,7 @@ i.e. includes methods to convert a dictionary of dataframes by chain into a dict
 Doesn't require any unusual packages.
 """
 import pandas as pd
+from pymbar import timeseries
 
 
 VERSION = '0.2.3'
@@ -225,7 +226,7 @@ def get_state_from_snapshot(snapshot, state_df):
 
     return state_label
 
-def get_state_timseries_from_df(df, state_df):
+def get_state_timeseries_from_df(df, state_df):
     """
     Assumes 'State' is last column in state_df.
 
@@ -243,6 +244,57 @@ def get_state_timseries_from_df(df, state_df):
     result = data_df.apply(get_state_from_snapshot, axis=1, state_df=state_df)
 
     return result
+
+def compress_state_space(tseries, state_df):
+    """
+    Converts result from get_state_timeseries_from_df into a dataframe and then compresses into the state space of the provided state_df
+
+    :param tseries:
+    :param state_df:
+    :return:
+    """
+
+    tseries_df = pd.DataFrame({'All State': tseries})
+
+    two_state_series = tseries_df.apply(get_state_from_snapshot, axis=1, state_df=state_df)
+
+    return two_state_series
+
+def get_uncorrelated_tseries(tseries):
+    """
+
+    :param tseries:
+    :return:
+    """
+    try:
+        idx = timeseries.subsampleCorrelatedData(tseries)
+        uncorr = tseries[idx]
+    except timeseries.ParameterError:
+        print("Failed to find autocorrelation time")
+        uncorr = tseries
+
+    return uncorr
+
+
+def get_state_prob_from_tseries(tseries, state_dict):
+    """
+    Based on a dictionary of state names and idx, convert a tseries to a dataframe of probabilities associated with that state.
+
+
+    :param state_dict:
+    :return:
+    """
+
+    probs = []
+    for name, idx in state_dict.items():
+        prob = len(tseries[tseries == idx]) / len(tseries)
+        probs.append(prob)
+
+    df = pd.DataFrame({'State': list(state_dict.keys()), 'Probability': probs})
+
+    return df
+
+
 
 def get_dihedral_bin_probabilities_from_df(sys_name, df):
     cols = list(df.columns)[:-1] ## This drops the 'sys name' column
