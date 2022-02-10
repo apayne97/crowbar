@@ -7,10 +7,14 @@ The standard is for these functions to return a figure.
 import plotly as pt
 import plotly.express as px
 import plotly.graph_objects as go
+from functools import wraps
 
 VERSION = '0.2.0'
 
 def make_square(func):
+
+    ## thanks to this link <https://stackoverflow.com/questions/1782843/python-decorator-handling-docstrings> for pointing me to this
+    @wraps(func)
     def wrapper(*args, **kwargs):
 
         fig = func(*args, **kwargs)
@@ -23,6 +27,7 @@ def make_square(func):
     return wrapper
 
 def dist_hist_wrapper(func):
+    @wraps(func)
     def wrapper(*args, **kwargs):
         fig = func(*args, **kwargs)
         fig.update_layout(height=800, width=800, barmode='overlay')
@@ -34,6 +39,7 @@ def dist_hist_wrapper(func):
     return wrapper
 
 def remove_silly_annotations(func):
+    @wraps(func)
     def wrapper(*args, **kwargs):
         fig = func(*args, **kwargs)
         fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
@@ -115,8 +121,16 @@ def plot_dihedral_prob_replicate_df(replicate_df):
     return fig
 
 @remove_silly_annotations
-def plot_dihedral_prob_replicate_df_with_error(replicate_df):
-    fig = px.scatter(replicate_df, x='Clone ID', y='Probability', facet_col='Sys Name',
+def plot_replicates_with_error(replicate_df, data_name):
+    """
+    Assumes you have bootstrapped the 'Upper Bound' and 'Lower Bound' of the data_name you would like to plot.
+    Splits up the 'Clone' on the x-axis and facets by 'System'.
+
+    :param replicate_df:
+    :param data_name:
+    :return:
+    """
+    fig = px.scatter(replicate_df, x='Clone', y=data_name, facet_col='System',
                         category_orders={  # replaces default order by column name,
                             "Sys Name": ["Open CHARMM-GUI", "Open CGUI 10x + 100ns bb", "Closed CHARMM-GUI",
                                          "Closed CGUI 10x + 100ns bb"]
@@ -126,8 +140,8 @@ def plot_dihedral_prob_replicate_df_with_error(replicate_df):
     return fig
 
 @remove_silly_annotations
-def plot_dihedral_prob_replicate_df_with_error_combined(replicate_df):
-    fig = px.scatter(replicate_df, x='Sys Name', y='Probability',
+def plot_systems_with_error(replicate_df, data_name):
+    fig = px.scatter(replicate_df, x='System', y=data_name,
                         category_orders={  # replaces default order by column name,
                             "Sys Name": ["Open CHARMM-GUI", "Open CGUI 10x + 100ns bb", "Closed CHARMM-GUI",
                                          "Closed CGUI 10x + 100ns bb"]
@@ -136,6 +150,16 @@ def plot_dihedral_prob_replicate_df_with_error_combined(replicate_df):
                         )
     return fig
 
+@remove_silly_annotations
+def plot_CA_dist_combined_with_error(replicate_df):
+    fig = px.scatter(replicate_df, x='System', y='Mean ILE46 to ILE271 Distance (Å)',
+                        category_orders={  # replaces default order by column name,
+                            "Sys Name": ["Open CHARMM-GUI", "Open CGUI 10x + 100ns bb", "Closed CHARMM-GUI",
+                                         "Closed CGUI 10x + 100ns bb"]
+                        },
+                   error_y="Std"
+                        )
+    return fig
 
 def plot_combined_dihedral_plots(df, resname, chainids = [0, 1]):
     x = f'{resname}_Chain {chainids[0]}'

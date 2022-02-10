@@ -295,7 +295,7 @@ def get_state_prob_from_tseries(tseries, state_dict):
 
     return df
 
-def bootstrap_error_bars(tseries, n=10000, state_idx=1):
+def bootstrap_error_bars(tseries, n=10000, discrete=True, get_mean=True, state_idx=1):
     """
     Assumes binary data.
     """
@@ -303,18 +303,27 @@ def bootstrap_error_bars(tseries, n=10000, state_idx=1):
     lower_bound = int(n * 0.025)
     upper_bound = int(n * 0.975)
 
-    probs = []
+    values = []
     for i in range(n):
         sample = tseries.sample(frac=1, replace=True, axis=0)
-        prob = len(sample[sample == state_idx]) / len(sample)
-        probs.append(prob)
 
-    probs.sort()
+        if discrete:
+            ## we are getting the probability of being in state_idx
+            value = len(sample[sample == state_idx]) / len(sample)
+        else:
+            if get_mean:
+                ## we will get the mean of the continuous data
+                value = sample.mean()
 
-    lower = probs[lower_bound]
-    upper = probs[upper_bound]
 
-    mean = np.mean(probs)
+        values.append(value)
+
+    values.sort()
+
+    lower = values[lower_bound]
+    upper = values[upper_bound]
+
+    mean = np.mean(values)
     print(lower, mean, upper)
     print(mean-lower, mean, upper-mean)
 
@@ -329,7 +338,7 @@ def get_binary_state_prob_from_tseries(tseries):
     :return:
     """
 
-    lower, mean, upper = bootstrap_error_bars(tseries)
+    lower, mean, upper = bootstrap_error_bars_on_binary_data(tseries)
 
     df = pd.DataFrame({'State': 'Open', 'Probability': mean, 'Lower Bound': lower, 'Upper Bound': upper},index=[0])
 
@@ -375,6 +384,34 @@ def get_replicate_df(sys_dict, df_name):
     full_df['Clone ID'] = idx_list
     return full_df
 
+
+def get_combined_chain_tseries_from_df(df, data_label, data_name, chain_list):
+    """
+    Works in conjunction with CA-CA distance calculations.
+    Given a dataframe with 'Label' defining the variable of interest and 'Chain' denoting the chain.
+    Combines the uncorrelated tseries (using pymbar timeseries module) from each chain into a single tseries.
+    Returns a tseries.
+
+
+    :param df:
+    :param data_label:
+    :param data_name:
+    :param chain_list:
+    :return:
+    """
+    tseries_list = []
+    for chain in chain_list:
+        chain_tseries = df[(df['Label'] == data_label) & (df['Chain'] == chain)][data_name]
+        print(chain_tseries)
+        idx = timeseries.subsampleCorrelatedData(chain_tseries)
+        uncorr = chain_tseries[idx]
+        tseries_list.append(uncorr)
+
+    tseries = pd.Series(tseries_list)
+    combined_tseries = tseries.explode()
+
+    return combined_tseries
+
 def get_combined_tseries_across_replicates(sys_dict, sys_list, data_name):
     """
     Goal is to combine the data across replicates.
@@ -393,9 +430,15 @@ def get_combined_tseries_across_replicates(sys_dict, sys_list, data_name):
         combined_tseries = pd.Series(tseries_list).explode()
         sys_tseries_dict[sys] = combined_tseries
 
-        ## this part takes a while, bootstrap error bars and mean from combined data
-        ## might want to split this up into a separate function
-        df_list.append(get_binary_state_prob_from_tseries(combined_tseries))
-    combined_df = pd.concat(df_list)
-    combined_df['Sys Name'] = sys_list
-    return combined_df, sys_tseries_dict
+
+    return sys_tseries_dict
+
+# def useful_bootstrap_function():
+#         if bootstrap_error:
+#             ## this part takes a while, bootstrap error bars and mean from combined data
+#             ## might want to split this up into a separate function
+#             df_list.append(get_binary_state_prob_from_tseries(combined_tseries))
+#
+#     if bootstrap_error:
+#         combined_df = pd.concat(df_list)
+#         combined_df['Sys Name'] = sys_list
