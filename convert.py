@@ -338,7 +338,7 @@ def get_binary_state_prob_from_tseries(tseries):
     :return:
     """
 
-    lower, mean, upper = bootstrap_error_bars_on_binary_data(tseries)
+    lower, mean, upper = bootstrap_error_bars(tseries)
 
     df = pd.DataFrame({'State': 'Open', 'Probability': mean, 'Lower Bound': lower, 'Upper Bound': upper},index=[0])
 
@@ -432,6 +432,58 @@ def get_combined_tseries_across_replicates(sys_dict, sys_list, data_name):
 
 
     return sys_tseries_dict
+
+def get_bootstrapped_replicates_df_from_sys_dict(sys_dict, input_data_name, output_data_name):
+    sys_list = []
+    means_list = []
+    lower_list = []
+    upper_list = []
+    clone_id_list = []
+    for sys, info in sys_dict.items():
+        combined_tseries = info[input_data_name]
+
+        system = info['Sys']
+        clone = info['CloneIDX']
+
+        sys_list.append(system)
+        clone_id_list.append(clone)
+
+        ## get boostrap instead of this
+
+        lower, mean, upper = bootstrap_error_bars(combined_tseries, discrete=False)
+
+        means_list.append(mean)
+        lower_list.append(lower)
+        upper_list.append(upper)
+    combined_df = pd.DataFrame({'Clone': clone_id_list,
+                                'System': sys_list,
+                                output_data_name: means_list,
+                                'Lower Bound': lower_list,
+                                'Upper Bound': upper_list})
+    return combined_df
+
+def get_bootstrapped_system_df_from_sys_tseries_dict(sys_tseries_dict, output_data_name):
+    sys_list = []
+    means_list = []
+    lower_list = []
+    upper_list = []
+
+    for sys, tseries in sys_tseries_dict.items():
+        sys_list.append(sys)
+
+        lower, mean, upper = bootstrap_error_bars(tseries, discrete=False)
+
+        means_list.append(mean)
+        lower_list.append(lower)
+        upper_list.append(upper)
+
+    for item in [sys_list, means_list, lower_list, upper_list]:
+        print(len(item))
+    system_df = pd.DataFrame({'System': sys_list,
+                                output_data_name: means_list,
+                                'Lower Bound': lower_list,
+                                'Upper Bound': upper_list})
+    return system_df
 
 # def useful_bootstrap_function():
 #         if bootstrap_error:

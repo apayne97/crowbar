@@ -141,23 +141,20 @@ def plot_replicates_with_error(replicate_df, data_name):
 
 @remove_silly_annotations
 def plot_systems_with_error(replicate_df, data_name):
+    """
+    Assumes you have bootstrapped the 'Upper Bound' and 'Lower Bound' of the data_name you would like to plot.
+    'System' is plotted on the x axis, the y axis is the 'data_name' data.
+
+    :param replicate_df:
+    :param data_name:
+    :return:
+    """
     fig = px.scatter(replicate_df, x='System', y=data_name,
                         category_orders={  # replaces default order by column name,
                             "Sys Name": ["Open CHARMM-GUI", "Open CGUI 10x + 100ns bb", "Closed CHARMM-GUI",
                                          "Closed CGUI 10x + 100ns bb"]
                         },
                    error_y="Upper Bound", error_y_minus="Lower Bound"
-                        )
-    return fig
-
-@remove_silly_annotations
-def plot_CA_dist_combined_with_error(replicate_df):
-    fig = px.scatter(replicate_df, x='System', y='Mean ILE46 to ILE271 Distance (Å)',
-                        category_orders={  # replaces default order by column name,
-                            "Sys Name": ["Open CHARMM-GUI", "Open CGUI 10x + 100ns bb", "Closed CHARMM-GUI",
-                                         "Closed CGUI 10x + 100ns bb"]
-                        },
-                   error_y="Std"
                         )
     return fig
 
