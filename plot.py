@@ -100,27 +100,6 @@ def plot_dihedral_by_chain_histogram(df, resname, chainids = [0, 1]):
     return fig
 
 @remove_silly_annotations
-def plot_distance_replicate_df(replicate_df):
-    fig = px.strip(replicate_df, x='Dist Name', y='Mean Val (Å)', color='Sys Name',
-                        category_orders={ # replaces default order by column name
-                    "Dist Name": ["ILE46_0 to ILE271_1", "ILE46_0 to ILE271_0", "ILE46_0 to ILE46_1", "ILE271_0 to ILE271_1"],
-                    "Sys Name": ["Open CHARMM-GUI", "Open CGUI 10x + 100ns bb", "Closed CHARMM-GUI", "Closed CGUI 10x + 100ns bb"]
-                })
-    fig.update_xaxes(title='Residue-Residue Distance')
-    fig.update_yaxes(title='Mean CA-CA Distance (Å)')
-    return fig
-
-@remove_silly_annotations
-def plot_dihedral_prob_replicate_df(replicate_df):
-    fig = px.strip(replicate_df, x='Sys Name', y='Probability', facet_col='State', color='Sys Name',
-                        category_orders={  # replaces default order by column name,
-                            "Sys Name": ["Open CHARMM-GUI", "Open CGUI 10x + 100ns bb", "Closed CHARMM-GUI",
-                                         "Closed CGUI 10x + 100ns bb"]
-                        },
-                        )
-    return fig
-
-@remove_silly_annotations
 def plot_replicates_with_error(replicate_df, data_name):
     """
     Assumes you have bootstrapped the 'Upper Bound' and 'Lower Bound' of the data_name you would like to plot.
@@ -132,7 +111,7 @@ def plot_replicates_with_error(replicate_df, data_name):
     """
     fig = px.scatter(replicate_df, x='Clone', y=data_name, facet_col='System', text='N Samples',
                         category_orders={  # replaces default order by column name,
-                            "Sys Name": ["Open CHARMM-GUI", "Open CGUI 10x + 100ns bb", "Closed CHARMM-GUI",
+                            "System": ["Open CHARMM-GUI", "Open CGUI 10x + 100ns bb", "Closed CHARMM-GUI",
                                          "Closed CGUI 10x + 100ns bb"]
                         },
                    error_y="Upper Bound", error_y_minus="Lower Bound"
@@ -152,7 +131,7 @@ def plot_systems_with_error(replicate_df, data_name):
     """
     fig = px.scatter(replicate_df, x='System', y=data_name, text='N Samples',
                         category_orders={  # replaces default order by column name,
-                            "Sys Name": ["Open CHARMM-GUI", "Open CGUI 10x + 100ns bb", "Closed CHARMM-GUI",
+                            "System": ["Open CHARMM-GUI", "Open CGUI 10x + 100ns bb", "Closed CHARMM-GUI",
                                          "Closed CGUI 10x + 100ns bb"]
                         },
                    error_y="Upper Bound", error_y_minus="Lower Bound"
