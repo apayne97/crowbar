@@ -170,15 +170,18 @@ def get_pore_radius_profile(chap_dat,plot='True'):
     
     pass
 
-def get_min_pore_radius(chap_data):
-    dat=[]
-    min_radius = np.array(chap_data['pathwayScalarTimeSeries']['minRadius'])*10 # Min pore (nm) radians * 10 = min pore radius in A 
-    t = np.array(chap_data['pathwayScalarTimeSeries']['t'])
-    
-    dat.append(t)
-    dat.append(min_radius)
-    
-    dat=np.array(dat)
+def get_min_pore_radius(chap_data, simple_tseries=False):
+    min_radius = np.array(chap_data['pathwayScalarTimeSeries']['minRadius'])*10 # Min pore (nm) radians * 10 = min pore radius in A
+
+    if not simple_tseries:
+        dat = []
+        t = np.array(chap_data['pathwayScalarTimeSeries']['t'])
+        dat.append(t)
+        dat.append(min_radius)
+        dat = np.array(dat)
+    else:
+        dat = min_radius
+
     
     return dat
 
