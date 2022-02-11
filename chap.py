@@ -261,7 +261,7 @@ def plot_get_pore_solvent_desnity(chap_data):
     pl.plot(z,mean_solvent_density,'k')
     pl.vlines(3,0,100,'k',linestyles='--',alpha=0.4)
     pl.vlines(-4,0,100,'k',linestyles='--',alpha=0.4)
-    pl.axvspan(s[500], s[580], alpha=0.3, color='orange')
+    pl.axvspan(z[500], z[580], alpha=0.3, color='orange')
     pl.xlim(-4,6)
     pl.ylim(0,100)
 

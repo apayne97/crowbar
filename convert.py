@@ -261,6 +261,37 @@ def compress_state_space(tseries, state_df):
 
     return two_state_series
 
+def map_state_space_for_snapshot(snapshot, state_dict):
+    """
+    Expects state_dict that looks like this: {0: [0], 1: [1,2,3]...}
+    Where a list of original states (the values) are mapped to the new states (the keys).
+    Returns the new state given a snapshot containing an integer corresponding to a previous state.
+
+    :param snapshot:
+    :param state_dict:
+    :return:
+    """
+    for idx, bins in state_dict.items():
+        if int(snapshot) in bins:
+            return idx
+
+
+def map_state_space(tseries, state_dict):
+    """
+    Maps the state space of a whole tseries to a new state using `map_state_space_for_snapshot`.
+
+    :param tseries:
+    :param state_df:
+    :return:
+    """
+
+    tseries_df = pd.DataFrame({'All State': tseries})
+
+    flattened_state_series = tseries_df.apply(map_state_space_for_snapshot, axis=1, state_dict=state_dict)
+
+    return flattened_state_series
+
+
 def get_uncorrelated_tseries(tseries):
     """
 
