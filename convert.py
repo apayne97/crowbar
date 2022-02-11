@@ -277,23 +277,23 @@ def get_uncorrelated_tseries(tseries):
     return uncorr
 
 
-def get_state_prob_from_tseries(tseries, state_dict):
-    """
-    Based on a dictionary of state names and idx, convert a tseries to a dataframe of probabilities associated with that state.
-
-
-    :param state_dict:
-    :return:
-    """
-
-    probs = []
-    for name, idx in state_dict.items():
-        prob = len(tseries[tseries == idx]) / len(tseries)
-        probs.append(prob)
-
-    df = pd.DataFrame({'State': list(state_dict.keys()), 'Probability': probs})
-
-    return df
+# def get_state_prob_from_tseries(tseries, state_dict):
+#     """
+#     Based on a dictionary of state names and idx, convert a tseries to a dataframe of probabilities associated with that state.
+#
+#
+#     :param state_dict:
+#     :return:
+#     """
+#
+#     probs = []
+#     for name, idx in state_dict.items():
+#         prob = len(tseries[tseries == idx]) / len(tseries)
+#         probs.append(prob)
+#
+#     df = pd.DataFrame({'State': list(state_dict.keys()), 'Probability': probs})
+#
+#     return df
 
 def bootstrap_error_bars(tseries, n=10000, discrete=True, get_mean=True, state_idx=1):
     """
@@ -329,63 +329,64 @@ def bootstrap_error_bars(tseries, n=10000, discrete=True, get_mean=True, state_i
 
     return (mean-lower, mean, upper-mean)
 
-def get_binary_state_prob_from_tseries(tseries):
-    """
-    Based on a dictionary of state names and idx, convert a tseries to a dataframe of probabilities associated with that state.
+# def get_binary_state_prob_from_tseries(tseries):
+#     """
+#     Based on a dictionary of state names and idx, convert a tseries to a dataframe of probabilities associated with that state.
+#
+#
+#     :param state_dict:
+#     :return:
+#     """
+#
+#     lower, mean, upper = bootstrap_error_bars(tseries)
+#
+#     df = pd.DataFrame({'State': 'Open', 'Probability': mean, 'Lower Bound': lower, 'Upper Bound': upper},index=[0])
+#
+#     return df
+
+# def get_mean_from_long_dist_df(sys_name, long_df, data_name):
+#     """
+#     Collapses data split by chain into a mean.
+#     """
+#
+#     ## get list of distance names
+#     dist_names = list(set(long_df['Label']))
+#
+#     means = []
+#
+#     for dist_name in dist_names:
+#         concat_df = long_df[long_df['Label'] == dist_name]
+#         mean = concat_df[data_name].mean()
+#         means.append(mean)
+#
+#     df = pd.DataFrame({'Dist Name': dist_names, 'Mean Val (Å)': means, 'Sys Name': sys_name})
+#
+#     return df
+
+# def get_replicate_df(sys_dict, df_name):
+#     """
+#     Concatenates similar dfs in a sys_dict.
+#
+#     :param sys_dict:
+#     :param df_name:
+#     :return:
+#     """
+#
+#     df_list = []
+#     idx_list = []
+#     for sys, info in sys_dict.items():
+#         idx_list.append(info['CloneIDX'])
+#         df = info[df_name]
+#         sys_name = info['Sys']
+#         df['Sys Name'] = sys_name
+#         df_list.append(df)
+#     full_df = pd.concat(df_list)
+#     full_df['Clone ID'] = idx_list
+#
+#     return full_df
 
 
-    :param state_dict:
-    :return:
-    """
-
-    lower, mean, upper = bootstrap_error_bars(tseries)
-
-    df = pd.DataFrame({'State': 'Open', 'Probability': mean, 'Lower Bound': lower, 'Upper Bound': upper},index=[0])
-
-    return df
-
-def get_mean_from_long_dist_df(sys_name, long_df, data_name):
-    """
-    Collapses data split by chain into a mean.
-    """
-
-    ## get list of distance names
-    dist_names = list(set(long_df['Label']))
-
-    means = []
-
-    for dist_name in dist_names:
-        concat_df = long_df[long_df['Label'] == dist_name]
-        mean = concat_df[data_name].mean()
-        means.append(mean)
-
-    df = pd.DataFrame({'Dist Name': dist_names, 'Mean Val (Å)': means, 'Sys Name': sys_name})
-
-    return df
-
-def get_replicate_df(sys_dict, df_name):
-    """
-    Concatenates similar dfs in a sys_dict.
-
-    :param sys_dict:
-    :param df_name:
-    :return:
-    """
-
-    df_list = []
-    idx_list = []
-    for sys, info in sys_dict.items():
-        idx_list.append(info['CloneIDX'])
-        df = info[df_name]
-        sys_name = info['Sys']
-        df['Sys Name'] = sys_name
-        df_list.append(df)
-    full_df = pd.concat(df_list)
-    full_df['Clone ID'] = idx_list
-    return full_df
-
-
-def get_combined_chain_tseries_from_df(df, data_label, data_name, chain_list):
+def get_combined_uncorr_chain_tseries_from_df(df, data_label, data_name, chain_list):
     """
     Works in conjunction with CA-CA distance calculations.
     Given a dataframe with 'Label' defining the variable of interest and 'Chain' denoting the chain.
@@ -403,8 +404,7 @@ def get_combined_chain_tseries_from_df(df, data_label, data_name, chain_list):
     for chain in chain_list:
         chain_tseries = df[(df['Label'] == data_label) & (df['Chain'] == chain)][data_name]
         print(chain_tseries)
-        idx = timeseries.subsampleCorrelatedData(chain_tseries)
-        uncorr = chain_tseries[idx]
+        uncorr = get_uncorrelated_tseries(chain_tseries)
         tseries_list.append(uncorr)
 
     tseries = pd.Series(tseries_list)
@@ -439,18 +439,21 @@ def get_bootstrapped_replicates_df_from_sys_dict(sys_dict, input_data_name, outp
     lower_list = []
     upper_list = []
     clone_id_list = []
+    n_samples_list = []
     for sys, info in sys_dict.items():
-        combined_tseries = info[input_data_name]
+        tseries = info[input_data_name]
 
         system = info['Sys']
         clone = info['CloneIDX']
+
+        n_samples_list.append(len(tseries))
 
         sys_list.append(system)
         clone_id_list.append(clone)
 
         ## get boostrap instead of this
 
-        lower, mean, upper = bootstrap_error_bars(combined_tseries, discrete=False)
+        lower, mean, upper = bootstrap_error_bars(tseries, discrete=False)
 
         means_list.append(mean)
         lower_list.append(lower)
@@ -459,7 +462,8 @@ def get_bootstrapped_replicates_df_from_sys_dict(sys_dict, input_data_name, outp
                                 'System': sys_list,
                                 output_data_name: means_list,
                                 'Lower Bound': lower_list,
-                                'Upper Bound': upper_list})
+                                'Upper Bound': upper_list,
+                               'N Samples': n_samples_list})
     return combined_df
 
 def get_bootstrapped_system_df_from_sys_tseries_dict(sys_tseries_dict, output_data_name):
@@ -467,6 +471,7 @@ def get_bootstrapped_system_df_from_sys_tseries_dict(sys_tseries_dict, output_da
     means_list = []
     lower_list = []
     upper_list = []
+    n_samples_list = []
 
     for sys, tseries in sys_tseries_dict.items():
         sys_list.append(sys)
@@ -477,20 +482,11 @@ def get_bootstrapped_system_df_from_sys_tseries_dict(sys_tseries_dict, output_da
         lower_list.append(lower)
         upper_list.append(upper)
 
-    for item in [sys_list, means_list, lower_list, upper_list]:
-        print(len(item))
+        n_samples_list.append(len(tseries))
+
     system_df = pd.DataFrame({'System': sys_list,
                                 output_data_name: means_list,
                                 'Lower Bound': lower_list,
-                                'Upper Bound': upper_list})
+                                'Upper Bound': upper_list,
+                              'N Samples': n_samples_list})
     return system_df
-
-# def useful_bootstrap_function():
-#         if bootstrap_error:
-#             ## this part takes a while, bootstrap error bars and mean from combined data
-#             ## might want to split this up into a separate function
-#             df_list.append(get_binary_state_prob_from_tseries(combined_tseries))
-#
-#     if bootstrap_error:
-#         combined_df = pd.concat(df_list)
-#         combined_df['Sys Name'] = sys_list

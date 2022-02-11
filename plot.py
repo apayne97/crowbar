@@ -130,13 +130,14 @@ def plot_replicates_with_error(replicate_df, data_name):
     :param data_name:
     :return:
     """
-    fig = px.scatter(replicate_df, x='Clone', y=data_name, facet_col='System',
+    fig = px.scatter(replicate_df, x='Clone', y=data_name, facet_col='System', text='N Samples',
                         category_orders={  # replaces default order by column name,
                             "Sys Name": ["Open CHARMM-GUI", "Open CGUI 10x + 100ns bb", "Closed CHARMM-GUI",
                                          "Closed CGUI 10x + 100ns bb"]
                         },
                    error_y="Upper Bound", error_y_minus="Lower Bound"
                         )
+    fig.update_traces(textposition="bottom center")
     return fig
 
 @remove_silly_annotations
@@ -149,13 +150,14 @@ def plot_systems_with_error(replicate_df, data_name):
     :param data_name:
     :return:
     """
-    fig = px.scatter(replicate_df, x='System', y=data_name,
+    fig = px.scatter(replicate_df, x='System', y=data_name, text='N Samples',
                         category_orders={  # replaces default order by column name,
                             "Sys Name": ["Open CHARMM-GUI", "Open CGUI 10x + 100ns bb", "Closed CHARMM-GUI",
                                          "Closed CGUI 10x + 100ns bb"]
                         },
                    error_y="Upper Bound", error_y_minus="Lower Bound"
                         )
+    fig.update_traces(textposition="bottom center")
     return fig
 
 def plot_combined_dihedral_plots(df, resname, chainids = [0, 1]):
