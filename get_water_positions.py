@@ -98,7 +98,24 @@ def get_water_positions(topology,traj,plot=True):
         pass
     
     ############################################################
-    
+
+def get_water_z_positions(t):
+    """
+    Written by Alex. Assumes you're using an mdtraj trajectory.
+
+    Gets the z positions of the oxygens in all water atoms.
+
+    I think you need to make sure the trajectories are aligned first, etc.
+
+    :param t:
+    :return (n_frames, n_water_atoms):
+    """
+
+    water_t = t.atom_slice(t.topology.select('water and name O'))
+    water_z = water_t.xyz[:, :, 2]
+
+    return water_z
+
 if __name__ == '__main__':
         
     get_water_positions(topology,traj,plot=True)
