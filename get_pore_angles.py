@@ -44,32 +44,50 @@ def get_pore_angles(topology,traj,protomer='both',tm='both'):
     
     def get_tm1_a_angle(universe):
         
-        A = universe.select_atoms('resid 35-48 and (backbone or name CB) and segid PROA').center_of_geometry()
-        B = universe.select_atoms('resid 48-56 and (backbone or name CB) and segid PROA').center_of_geometry()
-        angle = np.arccos((np.dot(A,B))/(norm(A)*norm(B)))
-        return np.rad2deg(angle)
+        A = universe.select_atoms('resid 34 and backbone and segid PROA').center_of_geometry()
+        B = universe.select_atoms('resid 48 and backbone and segid PROA').center_of_geometry()
+        C = universe.select_atoms('resid 56 and backbone and segid PROA').center_of_geometry()
+
+        AB = B - A
+        BC = B - C
+        angle = np.arccos((np.dot(AB,BC))/(norm(AB)*norm(BC)))
+        angle1=np.rad2deg(angle)
+        return angle1
         
     def get_tm1_b_angle(universe):
         
-        A = universe.select_atoms('resid 35-48 and (backbone or name CB) and segid PROB').center_of_geometry()
-        B = universe.select_atoms('resid 48-56 and (backbone or name CB) and segid PROB').center_of_geometry()
-        angle = np.arccos((np.dot(A,B))/(norm(A)*norm(B)))
-        return np.rad2deg(angle)
+        A = universe.select_atoms('resid 34 and backbone and segid PROB').center_of_geometry()
+        B = universe.select_atoms('resid 48 and backbone and segid PROB').center_of_geometry()
+        C = universe.select_atoms('resid 56 and backbone and segid PROB').center_of_geometry()
+
+        AB = B - A
+        BC = B - C
+        angle = np.arccos((np.dot(AB,BC))/(norm(AB)*norm(BC)))
+        angle1=np.rad2deg(angle)
+        return angle1
 
 
     def get_tm7_a_angle(universe):
         
-        A = universe.select_atoms('resid 259-274 and (backbone or name CB) and segid PROA').center_of_geometry()
-        B = universe.select_atoms('resid 275-283 and (backbone or name CB) and segid PROA').center_of_geometry()
-        angle = np.arccos((np.dot(A,B))/(norm(A)*norm(B)))
-        return np.rad2deg(angle)
+        A = universe.select_atoms('resid 260 and backbone and segid PROA').center_of_geometry()
+        B = universe.select_atoms('resid 270 and backbone and segid PROA').center_of_geometry()
+        C = universe.select_atoms('resid 283 and backbone and segid PROA').center_of_geometry()
+        AB = B - A
+        BC = B - C    
+        angle = np.arccos((np.dot(AB,BC))/(norm(AB)*norm(BC)))
+        angle1=np.rad2deg(angle)
+        return angle1
     
     def get_tm7_b_angle(universe):
         
-        A = universe.select_atoms('resid 259-274 and (backbone or name CB) and segid PROB').center_of_geometry()
-        B = universe.select_atoms('resid 275-283 and (backbone or name CB) and segid PROB').center_of_geometry()
-        angle = np.arccos((np.dot(A,B))/(norm(A)*norm(B)))
-        return np.rad2deg(angle)
+        A = universe.select_atoms('resid 260 and backbone and segid PROB').center_of_geometry()
+        B = universe.select_atoms('resid 270 and backbone and segid PROB').center_of_geometry()
+        C = universe.select_atoms('resid 283 and backbone and segid PROB').center_of_geometry()
+        AB = B - A
+        BC = B - C    
+        angle = np.arccos((np.dot(AB,BC))/(norm(AB)*norm(BC)))
+        angle1=np.rad2deg(angle)
+        return angle1
     
     
     ############################################################
