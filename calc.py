@@ -16,6 +16,38 @@ VERSION = '0.0.1'
 
 
 ## RMSD and RMSF Calculations
+def get_total_rmsd_df(t, topo_dict, ref=None, ps_per_frame=1000):
+
+    df_list = []
+    for label, topo in topo_dict.items():
+
+        idx = t.topology.select(topo)
+        print(label, topo)
+
+        if not ref:
+            ref = t
+
+        rmsd_array = md.rmsd(target=t,
+                             reference=ref,
+                             frame=0,
+                             atom_indices=idx,
+                             precentered=precentered)
+
+        ## Want to put this on the figure for comparison
+        n_residues = t.atom_slice(idx).n_residues
+
+        ## Get x and y values for plot
+        rmsd_array_in_A = rmsd_array * 10
+        time_in_ns = [x * ps_per_frame / 1000 for x in range(len(rmsd_array))]
+
+        df = pd.DataFrame({'RMSD (Å)': rmsd_array_in_A, 'Label': label, 'Time (ns)': time_in_ns})
+        df_list.append(df)
+
+    combined_df = pd.concat(df_list)
+
+    return combined_df
+
+
 
 def get_total_rmsf(t):
     idx = t.topology.select(f'protein and name CA')

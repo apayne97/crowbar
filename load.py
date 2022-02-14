@@ -133,3 +133,11 @@ def load_dist_dict(dist_yaml='/Users/alexpayne/Scientific_Projects/crowbar/testi
         dist_dict = yaml.safe_load(f)
 
     return dist_dict
+
+def load_topo_dict(topo_yaml='/Users/alexpayne/Scientific_Projects/crowbar/testing/topology.yaml'):
+    print(f'Getting topo from {topo_yaml}')
+
+    with open(topo_yaml) as f:
+        topo_dict = yaml.safe_load(f)
+
+    return topo_dict

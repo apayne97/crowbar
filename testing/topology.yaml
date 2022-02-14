@@ -1,0 +1,5 @@
+## Contains MD Traj topology strings
+chain_dict:
+  Protein Backbone: protein and backbone
+  Chain A: protein and backbone and chainid 0
+  Chain B: protein and backbone and chainid 1}

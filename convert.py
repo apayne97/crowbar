@@ -465,6 +465,13 @@ def get_combined_tseries_across_replicates(sys_dict, sys_list, data_name):
     return sys_tseries_dict
 
 def get_bootstrapped_replicates_df_from_sys_dict(sys_dict, input_data_name, output_data_name):
+    """
+
+    :param sys_dict:
+    :param input_data_name:
+    :param output_data_name:
+    :return:
+    """
     sys_list = []
     means_list = []
     lower_list = []
@@ -473,6 +480,10 @@ def get_bootstrapped_replicates_df_from_sys_dict(sys_dict, input_data_name, outp
     n_samples_list = []
     for sys, info in sys_dict.items():
         tseries = info[input_data_name]
+
+        if not type(tseries) == pd.Series:
+            print(f'{input_data_name} was not a pandas.Series, attempting to convert...')
+            tseries = pd.Series(tseries)
 
         system = info['Sys']
         clone = info['CloneIDX']
