@@ -272,7 +272,27 @@ def plot_get_pore_solvent_desnity(chap_data):
     pl.ylabel('Mean water density (nm^-3)')
     pl.title('mean water density BB open clone00')
 
+def get_min_water_density(chap_data, simple_tseries=False):
 
+    dat = []
+
+    t = np.array(chap_data['pathwayScalarTimeSeries']['t'])
+
+    min_solvent_density = np.array(chap_data['pathwayScalarTimeSeries']['minSolventDensity'])
+
+    dat.append(t)
+    dat.append(min_solvent_density)
+
+    dat = np.array(dat)
+
+    if simple_tseries:
+        dat = dat[1]
+
+        dat = dat[dat >= -50]
+
+        dat = dat[dat <= 50]
+
+    return dat
 
     
     
