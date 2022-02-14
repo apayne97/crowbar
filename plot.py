@@ -46,6 +46,10 @@ def remove_silly_annotations(func):
         return fig
     return wrapper
 
+def plot_tseries(tseries):
+    fig = px.line(tseries)
+    return fig
+
 @make_square
 def plot_dihedrals(df):
     #combined_df = construct_chi12_df(t, selection)
@@ -100,7 +104,7 @@ def plot_dihedral_by_chain_histogram(df, resname, chainids = [0, 1]):
     return fig
 
 @remove_silly_annotations
-def plot_replicates_with_error(replicate_df, data_name):
+def plot_replicates_with_error(replicate_df, data_name, sys_list = ['Open Default', 'Open 10x', 'Closed Default', 'Closed 10x']):
     """
     Assumes you have bootstrapped the 'Upper Bound' and 'Lower Bound' of the data_name you would like to plot.
     Splits up the 'Clone' on the x-axis and facets by 'System'.
@@ -111,8 +115,7 @@ def plot_replicates_with_error(replicate_df, data_name):
     """
     fig = px.scatter(replicate_df, x='Clone', y=data_name, facet_col='System', text='N Samples',
                         category_orders={  # replaces default order by column name,
-                            "System": ["Open CHARMM-GUI", "Open CGUI 10x + 100ns bb", "Closed CHARMM-GUI",
-                                         "Closed CGUI 10x + 100ns bb"]
+                            "System": sys_list
                         },
                    error_y="Upper Bound", error_y_minus="Lower Bound"
                         )
@@ -120,7 +123,7 @@ def plot_replicates_with_error(replicate_df, data_name):
     return fig
 
 @remove_silly_annotations
-def plot_systems_with_error(replicate_df, data_name):
+def plot_systems_with_error(replicate_df, data_name, sys_list = ['Open Default', 'Open 10x', 'Closed Default', 'Closed 10x']):
     """
     Assumes you have bootstrapped the 'Upper Bound' and 'Lower Bound' of the data_name you would like to plot.
     'System' is plotted on the x axis, the y axis is the 'data_name' data.
@@ -131,8 +134,7 @@ def plot_systems_with_error(replicate_df, data_name):
     """
     fig = px.scatter(replicate_df, x='System', y=data_name, text='N Samples',
                         category_orders={  # replaces default order by column name,
-                            "System": ["Open CHARMM-GUI", "Open CGUI 10x + 100ns bb", "Closed CHARMM-GUI",
-                                         "Closed CGUI 10x + 100ns bb"]
+                            "System": sys_list
                         },
                    error_y="Upper Bound", error_y_minus="Lower Bound"
                         )

@@ -87,3 +87,16 @@ def return_sample_sys(sys_dict: dict):
     sys, info = random.choice(list(sys_dict.items()))
     print(f'{info["Title"]}')
     return info
+
+def print_sys_dict(sys_dict):
+    for sys, info in sys_dict.items():
+        print_str = []
+        for item in ['Sys', 'Length', 'CloneIDX', 'Plot Title']:
+            print_str.append(f'{item}: {info[item]}')
+        print('\t'.join(print_str))
+
+def get_sys_names(sys_dict):
+    sys_names = set([info['Sys'] for info in sys_dict.values()])
+    sys_list = list(sys_names)
+    sys_list.sort(reverse=True)
+    return sys_list
