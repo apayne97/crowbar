@@ -50,6 +50,10 @@ def plot_tseries(tseries):
     fig = px.line(tseries)
     return fig
 
+def plot_total_rmsd(total_rmsd_df):
+    fig = px.line(total_rmsd_df, y='RMSD (Å)', x='Time (ns)', color='Label')
+    return fig
+
 @make_square
 def plot_dihedrals(df):
     #combined_df = construct_chi12_df(t, selection)

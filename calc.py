@@ -30,8 +30,7 @@ def get_total_rmsd_df(t, topo_dict, ref=None, ps_per_frame=1000):
         rmsd_array = md.rmsd(target=t,
                              reference=ref,
                              frame=0,
-                             atom_indices=idx,
-                             precentered=precentered)
+                             atom_indices=idx)
 
         ## Want to put this on the figure for comparison
         n_residues = t.atom_slice(idx).n_residues

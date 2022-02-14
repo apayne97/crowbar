@@ -1,5 +1,9 @@
 ## Contains MD Traj topology strings
-chain_dict:
+Chains:
   Protein Backbone: protein and backbone
   Chain A: protein and backbone and chainid 0
-  Chain B: protein and backbone and chainid 1}
+  Chain B: protein and backbone and chainid 1
+Chains no TM6-7 Loop:
+  Protein Backbone: protein and backbone and not residue 226 to 258
+  Chain A: protein and backbone and chainid 0 and not residue 226 to 258
+  Chain B: protein and backbone and chainid 1 and not residue 226 to 258
