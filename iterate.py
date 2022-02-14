@@ -27,7 +27,7 @@ def sys_dict_data_convert_iterator(func, sys_dict, input_data_dict, output_data_
 
 def sys_dict_plot_iterator(func, sys_dict, data_name, selector=False, pdf_dir=False, pdf_tag=False,
                            update_layout_kwargs=False, update_xaxes_kwargs=False, update_yaxes_kwargs=False,
-                           update_traces_kwargs=False, **kwargs):
+                           update_traces_kwargs=False, show_fig=False, **kwargs):
     for name, info in sys_dict.items():
         print(name)
         t = info['traj']
@@ -54,8 +54,9 @@ def sys_dict_plot_iterator(func, sys_dict, data_name, selector=False, pdf_dir=Fa
         if update_traces_kwargs:
             fig.update_traces(**update_traces_kwargs)
 
-        print('Showing figure...')
-        fig.show()
+        if show_fig:
+            print('Showing figure...')
+            fig.show()
 
         if pdf_dir and pdf_tag:
             filepath = f'{pdf_dir}/{name}_{pdf_tag}.pdf'
