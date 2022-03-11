@@ -116,7 +116,7 @@ def construct_chi12_df(t, selection):
 
 def construct_chi2_df(t, selection):
     """
-    Returns a dataframe of the chi1 and chi2 angles of the desired selection.
+    Returns a dataframe of the chi2 angles of the desired selection.
 
     Uses MDTraj selection math, i.e. 'protein and (residue 46 or residue 271)'
 
