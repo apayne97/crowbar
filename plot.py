@@ -51,7 +51,45 @@ def plot_tseries(tseries):
     return fig
 
 def plot_total_rmsd(total_rmsd_df):
+    """
+    Meant to be iterated for each trajectory, plots both Chains and Total separately.
+
+    :param total_rmsd_df:
+    :return:
+    """
     fig = px.line(total_rmsd_df, y='RMSD (Å)', x='Time (ns)', color='Label')
+    return fig
+
+
+@remove_silly_annotations
+def plot_combined_df_lines(combined_df, value_name, label="Label", time="Time (ns)", facet="System"):
+    """
+    Uses combined long_df.
+
+    :param combined_df:
+    :param value_name:
+    :param label:
+    :param time:
+    :param facet:
+    :return:
+    """
+
+    fig = px.line(combined_df,
+                  y=value_name,
+                  x=time,
+                  color=label,
+                  facet_col=facet,)
+    fig.update_yaxes(range=[0,2])
+
+    return fig
+
+@remove_silly_annotations
+def plot_rmsd_histograms(combined_df):
+    fig = px.histogram(combined_df, x="RMSD (Å)", color="Label", facet_col="System", barmode="overlay", nbins=50)
+    fig.update_yaxes(showticklabels=False)
+    fig.update_layout(yaxis1=dict(title="Frequency"))
+    # fig.update_xaxes(range=[0,2])
+    # fig.update_yaxes(range=[0, 100])
     return fig
 
 @make_square
@@ -70,9 +108,16 @@ def plot_dihedral_by_chain(df, resname, chainids = [0, 1], plot_type = 'scatter'
         fig = px.scatter(df,
                          x=x,
                          y=y,
-                         color=df.index)
-        fig.update_yaxes(range=[-185, 185], nticks=20)
-        fig.update_xaxes(range=[-185, 185], nticks=20)
+                         color=df.index,
+                         labels={  # replaces default labels by column name
+                             "index": "Time (ns)"
+                         },
+                         )
+        fig.update_yaxes(range=[-185, 185],
+                         nticks=20
+        )
+        fig.update_xaxes(range=[-185, 185],
+                         nticks=20)
     elif plot_type == 'contour':
         fig = px.density_heatmap(df,
                                  x=x,
@@ -173,3 +218,4 @@ def plot_combined_dihedral_plots(df, resname, chainids = [0, 1]):
     #     scaleratio=1,
     # )
     return fig
+

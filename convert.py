@@ -20,6 +20,75 @@ def pymol_to_mdtraj(pymol_string):
     final = f'residue {y}'
     return final
 
+def convert_resi_to_chain_resids(res_list, n_residues=447):
+    """
+    For each residue in res_list, converts to mdtraj resid for both chains.
+
+    :param t:
+    :param res_list:
+    :return:
+    """
+
+
+    ## this really slows the program down so if I don't have to do that it would be swell
+    # n_residues = t.atom_slice(t.topology.select('chainid 0')).n_residues
+
+    chaina_res_list = [res - 30 for res in res_list]
+    chainb_res_list = [res - 30 + n_residues for res in res_list]
+
+    return {'Chain A': chaina_res_list, 'Chain B': chainb_res_list}
+
+
+def get_atom_idx_for_angle(t, res_ends, cutoff_res):
+    """
+    Returns a dictionary of a list of lists of backbone atom ids for residues in one of two vectors for each chain
+    :param t:
+    :param res_ends:
+    :param cutoff_res:
+    :return:
+    """
+
+    new_res_ends = convert_resi_to_chain_resids(res_ends)
+
+    new_cutoff = convert_resi_to_chain_resids([cutoff_res])
+
+    v_dict = {'Chain A': [], 'Chain B': []}
+    for chainid in ["chainid 0", "chainid 1"]:
+        if chainid == 'chainid 0':
+            key = 'Chain A'
+        elif chainid == 'chainid 1':
+            key = 'Chain B'
+
+        res_list = new_res_ends[key]
+        cutoff = new_cutoff[key][0]
+
+        ## backbone only...both calculations include the cutoff angle
+
+        v1_str = f'(backbone and resid {res_list[0]} to {cutoff}) and {chainid}'
+        v2_str = f'(backbone and resid {cutoff} to {res_list[1]}) and {chainid}'
+        v1 = [int(i) for i in list(t.topology.select(v1_str))]
+        v2 = [int(i) for i in list(t.topology.select(v2_str))]
+        v_dict[key] = [v1, v2]
+    return v_dict
+
+def get_long_angle_from_vectors(vlist):
+    """
+    Given a list of 2 vectors, calculate the angle between them, assuming the angle should be between 90 and 180 degrees.
+    :param vlist:
+    :return:
+    """
+
+    v1 = vlist[0]
+    v2 = vlist[1]
+
+    ## assume vectors should be pointing in opposite directions
+    if v1[-1] < 0 and v2[-1] < 0:
+        v2 = v2 * -1
+    elif v1[-1] > 0 and v2[-1] > 0:
+        v2 = v2 * -1
+    angle_deg = np.arccos(v1.dot(v2)/(np.linalg.norm(v1)*np.linalg.norm(v2))) * 360 / (2 * np.pi)
+    return angle_deg
+
 def get_chain_df_dict_from_large_chain_df_dict(chain_df_dict, single_selection):
     """
     Given a dictionary of dataframes by chain, this selects a subset of each dataframe
@@ -442,6 +511,24 @@ def get_combined_uncorr_chain_tseries_from_df(df, data_label, data_name, chain_l
     combined_tseries = tseries.explode()
 
     return combined_tseries
+
+def get_combined_df(sys_dict, data_name):
+    """
+    Simple function to combine a particular value into a single df.
+
+    :param sys_dict:
+    :param data_name:
+    :return:
+    """
+    df_list = []
+    for sys, info in sys_dict.items():
+        label = info["Plot Title"]
+        df = info[data_name]
+        df["Label"] = label
+        df["System"] = info["Sys"]
+        df_list.append(df)
+    combined_df = pd.concat(df_list)
+    return combined_df
 
 def get_combined_tseries_across_replicates(sys_dict, sys_list, data_name):
     """

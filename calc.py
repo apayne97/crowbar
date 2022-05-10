@@ -11,6 +11,7 @@ from simtk.openmm.app import PDBxFile, CharmmPsfFile
 from math import pi
 import numpy as np
 import pandas as pd
+from . import convert
 
 VERSION = '0.0.1'
 
@@ -171,3 +172,45 @@ def get_dist_df_from_idx_dict(t, names, idx_dict, scheme='closest', return_long_
         # return_df = pd.merge(dfs['ChainA'],dfs['ChainB'], on="Time")
         return_obj = dfs
     return return_obj
+
+
+def compute_angles_by_chain(t, vdict):
+    """
+    Given a chain_dict of a list of 2 lists, containing the atomids for two vectors to define the angle against,
+    return a chain_dict of angles.
+    :param vdict:
+    :return:
+    """
+
+    chain_dict = {'Chain A': [], 'Chain B': []}
+
+    for chain in chain_dict.keys():
+        directors = md.compute_directors(t, vdict[chain])
+        chain_dict[chain] = [convert.get_long_angle_from_vectors(vlist) for vlist in directors]
+    return chain_dict
+
+
+def iterate_cutoff(t, tm, cutoff_range=None):
+
+    if not cutoff_range:
+        cutoff_range = range(*tm)
+
+    cutoffs = []
+    mean_angles = []
+    min_angles = []
+    max_angles = []
+    chains = []
+    for cutoff in cutoff_range:
+        print(cutoff)
+        vdict = convert.get_atom_idx_for_angle(t, tm, cutoff)
+#         print(vdict)
+        angle_dict = compute_angles_by_chain(t, vdict)
+        for chain in ['Chain A', 'Chain B']:
+            chains.append(chain)
+            cutoffs.append(cutoff)
+            mean_angles.append(np.mean(angle_dict[chain]))
+            min_angles.append(np.min(angle_dict[chain]))
+            max_angles.append(np.max(angle_dict[chain]))
+
+    df = pd.DataFrame({'Cutoff Res': cutoffs, 'Mean Angle': mean_angles, 'Min Angle': min_angles, 'Max Angle': max_angles, 'Chain': chains})
+    return df
