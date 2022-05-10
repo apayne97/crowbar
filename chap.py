@@ -24,15 +24,16 @@ from matplotlib import pyplot as pl
 import matplotlib.mlab as mlab
 import json
 from scipy.stats import norm
+import paramiko
 import mdtraj as md
 import os
 import sys
 import subprocess
 import getpass
+from scp import SCPClient, SCPException
+
 
 def do_chap(topology,trajectory,output_path,solvent='15'):
-    from scp import SCPClient, SCPException
-    import paramiko
     
     def dcd_to_xtc(topology, trajectory):
         
@@ -149,7 +150,7 @@ def do_chap(topology,trajectory,output_path,solvent='15'):
         ############################################################
 
     ###
-    # Close SSH clinet
+    # Close SSH client
     ssh.close()
     print('SSH connection to '+username+'@'+host+' successfully closed.')
     
@@ -170,18 +171,15 @@ def get_pore_radius_profile(chap_dat,plot='True'):
     
     pass
 
-def get_min_pore_radius(chap_data, simple_tseries=False):
-    min_radius = np.array(chap_data['pathwayScalarTimeSeries']['minRadius'])*10 # Min pore (nm) radians * 10 = min pore radius in A
-
-    if not simple_tseries:
-        dat = []
-        t = np.array(chap_data['pathwayScalarTimeSeries']['t'])
-        dat.append(t)
-        dat.append(min_radius)
-        dat = np.array(dat)
-    else:
-        dat = min_radius
-
+def get_min_pore_radius(chap_data):
+    dat=[]
+    min_radius = np.array(chap_data['pathwayScalarTimeSeries']['minRadius'])*10 # Min pore (nm) radians * 10 = min pore radius in A 
+    t = np.array(chap_data['pathwayScalarTimeSeries']['t'])
+    
+    dat.append(t)
+    dat.append(min_radius)
+    
+    dat=np.array(dat)
     
     return dat
 
@@ -256,43 +254,23 @@ def get_pore_solvent_density(chap_data):
 
     return dat
     
-def plot_get_pore_solvent_desnity(chap_data):
+def plot_get_pore_solvent_density(chap_data):
     
-    z = np.array(chap_data['pathwayProfile']['s'])*10
+    z = np.array(chap_data['pathwayProfile']['s'])
     mean_solvent_density = np.array(chap_data['pathwayProfile']['densityMean'])
     pl.figure()
     pl.plot(z,mean_solvent_density,'k')
     pl.vlines(3,0,100,'k',linestyles='--',alpha=0.4)
     pl.vlines(-4,0,100,'k',linestyles='--',alpha=0.4)
-    pl.axvspan(z[500], z[580], alpha=0.3, color='orange')
-    pl.xlim(-4,6)
+    #pl.axvspan(z[500], z[580], alpha=0.3, color='orange')
+    pl.xlim(-5,5)
     pl.ylim(0,100)
 
     pl.xlabel('z (nm)')
     pl.ylabel('Mean water density (nm^-3)')
-    pl.title('mean water density BB open clone00')
+    
 
-def get_min_water_density(chap_data, simple_tseries=False):
 
-    dat = []
-
-    t = np.array(chap_data['pathwayScalarTimeSeries']['t'])
-
-    min_solvent_density = np.array(chap_data['pathwayScalarTimeSeries']['minSolventDensity'])
-
-    dat.append(t)
-    dat.append(min_solvent_density)
-
-    dat = np.array(dat)
-
-    if simple_tseries:
-        dat = dat[1]
-
-        dat = dat[dat >= -50]
-
-        dat = dat[dat <= 50]
-
-    return dat
 
     
     

@@ -117,7 +117,7 @@ def construct_chi12_df(t, selection):
 
 def construct_chi2_df(t, selection):
     """
-    Returns a dataframe of the chi1 and chi2 angles of the desired selection.
+    Returns a dataframe of the chi2 angles of the desired selection.
 
     Uses MDTraj selection math, i.e. 'protein and (residue 46 or residue 271)'
 
@@ -172,7 +172,6 @@ def get_dist_df_from_idx_dict(t, names, idx_dict, scheme='closest', return_long_
         # return_df = pd.merge(dfs['ChainA'],dfs['ChainB'], on="Time")
         return_obj = dfs
     return return_obj
-
 
 def compute_angles_by_chain(t, vdict):
     """
