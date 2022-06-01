@@ -18,6 +18,24 @@ def load_sysdf(simulation_table_path="simulations.yaml"):
     sysdf = pd.DataFrame(sim_dict).T
     return sysdf
 
+def import_mdtraj_pdb(psf_path, pdb_path):
+    """
+
+    :param psf_path:
+    :param pdb_path:
+    :return:
+    """
+
+    ## load mdtraj pdb
+    pdb = md.load(pdb_path)
+
+    ## get topology from psf file using openmm
+    psf = CharmmPsfFile(psf_path)
+
+    ## convert topology using psf file
+    pdb.topology = pdb.topology.from_openmm(psf.topology)
+
+    return pdb
 
 def import_traj_from_munged(traj_path, psf_path, pdb_path):
     """
@@ -31,14 +49,11 @@ def import_traj_from_munged(traj_path, psf_path, pdb_path):
                     top=psf_path,
                     stride=1)
 
-    pdb = md.load(pdb_path)
-
-    ## get topology from psf file using openmm
-    psf = CharmmPsfFile(psf_path)
+    pdb = import_mdtraj_pdb(psf_path, pdb_path)
 
     ## convert topology to mdtraj topology and save to mdtraj object
-    t.topology = t.topology.from_openmm(psf.topology)
-    pdb.topology = pdb.topology.from_openmm(psf.topology)
+    t.topology = t.topology.from_openmm(pdb.topology)
+
 
     return (t, pdb)
 
@@ -56,7 +71,7 @@ def load_test(crow_path = '/Users/alexpayne/Scientific_Projects/crowbar'):
     return (t, pdb)
 
 
-def import_systems_from_munged(sys_names, traj_prefixes, sim_yaml, prefix_dict, traj_file_extension, n_clones, munged_path):
+def import_systems_from_munged(sys_names, traj_prefixes, sim_yaml, prefix_dict, traj_file_extension, n_clones, munged_path, load_traj=False):
     """
     Assumes trajectory strided to 1ns / frame and aligned with md.superpose().
 
@@ -98,13 +113,6 @@ def import_systems_from_munged(sys_names, traj_prefixes, sim_yaml, prefix_dict, 
                 clone_info.update(sys_info)
                 clone = f'{traj_prefix}_clone{idx:02d}'
 
-                traj_path = f'{munged_path}{system}/{clone}.{traj_file_extension}'
-                psf_path = f'{munged_path}{system}/step5_input.psf'
-                pdb_path = f'{munged_path}{system}/step5_input.pdb'
-
-                assert os.path.exists(traj_path), f'{traj_path} does not exist!'
-                assert os.path.exists(psf_path), f'{psf_path} does not exist!'
-
                 clone_info['Length'] = prefix_dict[traj_prefix]['Length']
 
                 full_name = f'{system}_{clone}'
@@ -113,11 +121,23 @@ def import_systems_from_munged(sys_names, traj_prefixes, sim_yaml, prefix_dict, 
                 ## Save mdtraj trajectory object of the loaded pdb path
                 pdb_path = f'{munged_path}{system}/step5_input.pdb'
 
-                print(f'Loading {full_name} from {traj_path}')
+                if load_traj:
+                    traj_path = f'{munged_path}{system}/{clone}.{traj_file_extension}'
+                    psf_path = f'{munged_path}{system}/step5_input.psf'
 
-                traj, pdb = import_traj_from_munged(traj_path, psf_path, pdb_path)
+                    assert os.path.exists(traj_path), f'{traj_path} does not exist!'
+                    assert os.path.exists(psf_path), f'{psf_path} does not exist!'
+
+                    print(f'Loading {full_name} from {traj_path}')
+
+                    traj, pdb = import_traj_from_munged(traj_path, psf_path, pdb_path)
+
+                    clone_info['traj'] = traj
+
+                else:
+                    pdb = import_mdtraj_pdb(psf_path,pdb_path)
+
                 clone_info['Input PDB'] = pdb
-                clone_info['traj'] = traj
 
                 ## this values is used to combine replicates (clones) of the same system
                 clone_info['Sys'] = f'{clone_info["State"]} {clone_info["Equilibration"]}'
