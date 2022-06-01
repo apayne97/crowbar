@@ -71,7 +71,7 @@ def load_test(crow_path = '/Users/alexpayne/Scientific_Projects/crowbar'):
     return (t, pdb)
 
 
-def import_systems_from_munged(sys_names, traj_prefixes, sim_yaml, prefix_dict, traj_file_extension, n_clones, munged_path, load_traj=False):
+def import_systems_from_munged(sys_names, traj_prefixes, sim_yaml, prefix_dict, traj_file_extension, n_clones, munged_path, load_traj=True):
     """
     Assumes trajectory strided to 1ns / frame and aligned with md.superpose().
 
