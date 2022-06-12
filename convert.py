@@ -524,8 +524,9 @@ def get_combined_df(sys_dict, data_name):
     for sys, info in sys_dict.items():
         label = info["Plot Title"]
         df = info[data_name]
-        df["Label"] = label
+        df["Label"] = label + ' ' + df["Label"]
         df["System"] = info["Sys"]
+        df['CloneIDX'] = info['CloneIDX']
         df_list.append(df)
     combined_df = pd.concat(df_list)
     return combined_df

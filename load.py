@@ -111,19 +111,33 @@ def import_systems_from_munged(sys_names, traj_prefixes, sim_yaml, prefix_dict, 
             for traj_prefix in traj_prefixes:
                 clone_info = {}
                 clone_info.update(sys_info)
+
+                ## System details
                 clone = f'{traj_prefix}_clone{idx:02d}'
 
                 clone_info['Length'] = prefix_dict[traj_prefix]['Length']
 
                 full_name = f'{system}_{clone}'
                 clone_info['Title'] = full_name
+                clone_info['CloneIDX'] = full_name[-2:]
+
+                ## this values is used to combine replicates (clones) of the same system
+                if clone_info['Equilibration'] == 'CHARMM-GUI':
+                    equil = 'Default'
+                elif clone_info['Equilibration'] == 'CGUI 10x + 100ns bb':
+                    equil = '10x'
+
+                clone_info['Sys'] = f'{clone_info["State"]} {equil} {clone_info["Protonation"]}'
+
+                plot_title = f'{clone_info["Length"]}ns {clone_info["Sys"]} {clone_info["CloneIDX"]}'
+                clone_info['Plot Title'] = plot_title
 
                 ## Save mdtraj trajectory object of the loaded pdb path
                 pdb_path = f'{munged_path}{system}/step5_input.pdb'
+                psf_path = f'{munged_path}{system}/step5_input.psf'
 
                 if load_traj:
                     traj_path = f'{munged_path}{system}/{clone}.{traj_file_extension}'
-                    psf_path = f'{munged_path}{system}/step5_input.psf'
 
                     assert os.path.exists(traj_path), f'{traj_path} does not exist!'
                     assert os.path.exists(psf_path), f'{psf_path} does not exist!'
@@ -133,14 +147,14 @@ def import_systems_from_munged(sys_names, traj_prefixes, sim_yaml, prefix_dict, 
                     traj, pdb = import_traj_from_munged(traj_path, psf_path, pdb_path)
 
                     clone_info['traj'] = traj
+                    clone_info['Input PDB'] = pdb
 
-                else:
-                    pdb = import_mdtraj_pdb(psf_path,pdb_path)
+                # else:
+                #     pdb = import_mdtraj_pdb(psf_path,pdb_path)
 
-                clone_info['Input PDB'] = pdb
 
-                ## this values is used to combine replicates (clones) of the same system
-                clone_info['Sys'] = f'{clone_info["State"]} {clone_info["Equilibration"]}'
+
+
 
                 sys_dict[full_name] = clone_info
 
