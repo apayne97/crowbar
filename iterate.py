@@ -30,7 +30,6 @@ def sys_dict_plot_iterator(func, sys_dict, data_name, selector=False, pdf_dir=Fa
                            update_traces_kwargs=False, show_fig=False, **kwargs):
     for name, info in sys_dict.items():
         print(name)
-        t = info['traj']
         data = info[data_name]
 
         if selector:

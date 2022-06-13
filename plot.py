@@ -109,21 +109,36 @@ def plot_dihedral_by_chain(df, resname, chainids = [0, 1], plot_type = 'scatter'
                          x=x,
                          y=y,
                          color=df.index,
-                         labels={  # replaces default labels by column name
-                             "index": "Time (ns)"
-                         },
                          )
         fig.update_yaxes(range=[-185, 185],
                          nticks=20
         )
         fig.update_xaxes(range=[-185, 185],
                          nticks=20)
-    elif plot_type == 'contour':
+    elif plot_type == 'density_contour':
+        fig = px.density_contour(df,
+                                 x=x,
+                                 y=y,
+                            )
+        
+        # bin_dict = {'start': -180,'end':180,'size':15}
+        # fig.update_traces(xbins=bin_dict, ybins=bin_dict)
+        # fig.update_traces(contours_coloring='fill', colorscale='Viridis')   
+
+    elif plot_type == 'density_heatmap':
         fig = px.density_heatmap(df,
                                  x=x,
                                  y=y,
+                                 nbinsx=72,
+                                 nbinsy=72,
                                  marginal_x="histogram",
-                                 marginal_y="histogram")
+                                 marginal_y="histogram",
+                                 # range_x=[-180, 180],
+                                 # range_y=[-180, 180],
+                                 )
+    # fig.update_layout(labels={  # replaces default labels by column name
+    #                          "index": "Time (ns)"
+    #                      })
     return fig
 
 @dist_hist_wrapper
@@ -153,6 +168,7 @@ def plot_dihedral_by_chain_histogram(df, resname, chainids = [0, 1]):
     return fig
 
 @remove_silly_annotations
+@make_square
 def plot_replicates_with_error(replicate_df, data_name, sys_list = ['Open Default', 'Open 10x', 'Closed Default', 'Closed 10x']):
     """
     Assumes you have bootstrapped the 'Upper Bound' and 'Lower Bound' of the data_name you would like to plot.
