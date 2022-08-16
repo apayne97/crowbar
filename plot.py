@@ -8,6 +8,7 @@ import plotly as pt
 import plotly.express as px
 import plotly.graph_objects as go
 from functools import wraps
+import plotly.express.colors as colors
 
 VERSION = '0.2.0'
 
@@ -235,3 +236,29 @@ def plot_combined_dihedral_plots(df, resname, chainids = [0, 1]):
     # )
     return fig
 
+def plot_ile271_histogram(df, resname='ILE271', chainids = [0, 1]):
+    x = f'{resname}_Chain {chainids[0]}'
+    y = f'{resname}_Chain {chainids[1]}'
+    fig = px.density_heatmap(df,
+                                     x=x,
+                                     y=y,
+                                     nbinsx=72,
+                                     nbinsy=72,
+                                     marginal_x="histogram",
+                                     marginal_y="histogram",
+                             facet_col='Sys Name',
+                                    color_continuous_scale=colors.diverging.curl,
+#                             color_continuous_midpoint=10
+                            )
+    bin_dict = {'start':-180, 'end':180, 'size':5}
+    fig.update_traces(xbins=bin_dict, ybins=bin_dict)
+    fig.update_layout(height=800,
+                      width=1600,
+                      showlegend=True,
+                      font=dict(
+                          family="Helvetica",
+                          size=26)
+                     )
+    fig.update_yaxes(nticks=20, showgrid=False)
+    fig.update_xaxes(nticks=20, showgrid=False)
+    return fig

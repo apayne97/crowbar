@@ -463,27 +463,25 @@ def bootstrap_error_bars(tseries, n=10000, discrete=True, get_mean=True, state_i
 #
 #     return df
 
-# def get_replicate_df(sys_dict, df_name):
-#     """
-#     Concatenates similar dfs in a sys_dict.
-#
-#     :param sys_dict:
-#     :param df_name:
-#     :return:
-#     """
-#
-#     df_list = []
-#     idx_list = []
-#     for sys, info in sys_dict.items():
-#         idx_list.append(info['CloneIDX'])
-#         df = info[df_name]
-#         sys_name = info['Sys']
-#         df['Sys Name'] = sys_name
-#         df_list.append(df)
-#     full_df = pd.concat(df_list)
-#     full_df['Clone ID'] = idx_list
-#
-#     return full_df
+def get_simple_replicates_df(sys_dict, df_name):
+    """
+    Concatenates similar dfs in a sys_dict.
+
+    :param sys_dict:
+    :param df_name:
+    :return:
+    """
+
+    df_list = []
+    for sys, info in sys_dict.items():
+        df = info[df_name]
+        sys_name = info['Sys']
+        df['Sys Name'] = sys_name
+        df['Clone ID'] = info['CloneIDX']
+        df_list.append(df)
+    replicates_df = pd.concat(df_list)
+
+    return replicates_df
 
 
 def get_combined_uncorr_chain_tseries_from_df(df, data_label, data_name, chain_list):
